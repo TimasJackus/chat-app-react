@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Container,
     Content,
@@ -9,38 +9,50 @@ import {
     FormControl,
     ButtonToolbar,
     Button,
-    Col
+    Col,
+    Message
 } from "rsuite";
 import { useStyles } from "./Login.styles";
 import { useHistory } from "react-router-dom";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { useUserContext } from "../../contexts";
-
-const LOGIN = gql`
-    mutation login($data: LoginInput!) {
-        login(data: $data) {
-            user {
-                id
-            }
-            token
-        }
-    }
-`;
+import { GraphQLError } from "graphql";
+import { LOGIN } from "../../graphql/mutations/LOGIN";
 
 export default function Login() {
+    const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
+    const [form, setForm] = useState({
+        email: "",
+        password: ""
+    });
     const classes = useStyles();
     const history = useHistory();
     const { onLogin } = useUserContext();
-    const [login] = useMutation(LOGIN, {
+    const [login, { loading }] = useMutation(LOGIN, {
         onCompleted({ login }) {
             onLogin({
                 ...login.user,
                 token: login.token
             });
+            history.push("/");
+        },
+        onError({ graphQLErrors }) {
+            setErrors(graphQLErrors);
         }
     });
 
-    function handleClick() {
+    function onChange(key: string) {
+        return function(value: string) {
+            setForm({ ...form, [key]: value });
+        };
+    }
+
+    function handleLogin() {
+        setErrors([]);
+        login({ variables: { data: form } });
+    }
+
+    function redirectToRegister() {
         history.push("/register");
     }
 
@@ -52,9 +64,21 @@ export default function Login() {
                         <Panel header={<h3>Login</h3>} bordered>
                             <Form fluid>
                                 <FormGroup>
+                                    {errors.map((error, index) => (
+                                        <Message
+                                            key={`error-${index}`}
+                                            showIcon
+                                            type="error"
+                                            description={error.message}
+                                        />
+                                    ))}
+                                </FormGroup>
+                                <FormGroup>
                                     <FormControl
                                         name="name"
                                         placeholder="Email address"
+                                        onChange={onChange("email")}
+                                        value={form.email}
                                     />
                                 </FormGroup>
                                 <FormGroup>
@@ -62,31 +86,24 @@ export default function Login() {
                                         name="password"
                                         type="password"
                                         placeholder="Password"
+                                        onChange={onChange("password")}
+                                        value={form.password}
                                     />
                                 </FormGroup>
                                 <FormGroup>
                                     <ButtonToolbar>
                                         <Button
                                             appearance="primary"
-                                            onClick={() => {
-                                                login({
-                                                    variables: {
-                                                        data: {
-                                                            email:
-                                                                "jackustimas@gmail.com",
-                                                            password: "test1234"
-                                                        }
-                                                    }
-                                                });
-                                            }}
+                                            loading={loading}
+                                            onClick={handleLogin}
                                         >
                                             Sign in
                                         </Button>
                                         <Button
                                             appearance="link"
-                                            onClick={handleClick}
+                                            onClick={redirectToRegister}
                                         >
-                                            Forgot password?
+                                            Register
                                         </Button>
                                     </ButtonToolbar>
                                 </FormGroup>
