@@ -27,13 +27,14 @@
         "react-scripts": "3.4.0",
         "rsuite": "^4.3.0",
         "subscriptions-transport-ws": "^0.9.16",
-        "typescript": "~3.7.2"
+        "typescript": "~3.7.2",
+        "yarn": "^1.22.4"
     },
     "scripts": {
-        "start": "react-app-rewired start",
-        "build": "react-app-rewired build",
-        "test": "react-app-rewired test",
-        "eject": "react-app-rewired eject"
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
     },
     "eslintConfig": {
         "extends": "react-app"

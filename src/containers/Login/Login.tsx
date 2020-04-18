@@ -10,20 +10,20 @@ import {
     ButtonToolbar,
     Button,
     Col,
-    Message
+    Message,
 } from "rsuite";
 import { useStyles } from "./Login.styles";
 import { useHistory } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { useUserContext } from "../../contexts";
 import { GraphQLError } from "graphql";
-import { LOGIN } from "../../graphql/mutations/LOGIN";
+import { LOGIN } from "../../graphql/mutations";
 
 export default function Login() {
     const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
     const [form, setForm] = useState({
         email: "",
-        password: ""
+        password: "",
     });
     const classes = useStyles();
     const history = useHistory();
@@ -32,17 +32,17 @@ export default function Login() {
         onCompleted({ login }) {
             onLogin({
                 ...login.user,
-                token: login.token
+                token: login.token,
             });
             history.push("/");
         },
         onError({ graphQLErrors }) {
             setErrors(graphQLErrors);
-        }
+        },
     });
 
     function onChange(key: string) {
-        return function(value: string) {
+        return function (value: string) {
             setForm({ ...form, [key]: value });
         };
     }
@@ -75,7 +75,7 @@ export default function Login() {
                                 </FormGroup>
                                 <FormGroup>
                                     <FormControl
-                                        name="name"
+                                        name="email"
                                         placeholder="Email address"
                                         onChange={onChange("email")}
                                         value={form.email}

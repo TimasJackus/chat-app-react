@@ -8,7 +8,7 @@ import {
     ApolloProvider,
     ApolloLink,
     concat,
-    split
+    split,
 } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import "rsuite/lib/styles/themes/dark/index.less";
@@ -23,12 +23,23 @@ const wsLink = new WebSocketLink({
     uri: `ws://localhost:4000/graphql`,
     options: {
         reconnect: true,
-        connectionParams: {
-            authorization:
-                "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI3YTI2MWQwLTgxMzItNGI5NS1iMzE2LWIxYzE1ZGNkZjFjMyIsImVtYWlsIjoiamFja3VzdGltYXNAZ21haWwuY29tIiwiZGlzcGxheU5hbWUiOiJUaW1hcyBKYWNrdXMiLCJwaG9uZU51bWJlciI6bnVsbCwiZGVzY3JpcHRpb24iOm51bGwsImltYWdlVXJsIjpudWxsLCJpYXQiOjE1ODM4NDM2MjB9.uL_NjQwFbtg1_4IZhkhdT_itWFR4YvXsUczLQVGraMo"
-        }
-    }
+        connectionParams: () => {
+            let user: string | User | null = localStorage.getItem(
+                "current-user"
+            );
+            console.log("get connectionParams()");
+            if (user) {
+                user = JSON.parse(user) as User;
+                return {
+                    authorization: user.token,
+                };
+            }
+            return null;
+        },
+    },
 });
+
+console.log(wsLink);
 
 const splitLink = split(
     ({ query }) => {
@@ -48,8 +59,8 @@ const authMiddleware = new ApolloLink((operation, forward) => {
         user = JSON.parse(user) as User;
         operation.setContext({
             headers: {
-                authorization: user.token
-            }
+                authorization: user.token,
+            },
         });
     }
 
@@ -58,7 +69,7 @@ const authMiddleware = new ApolloLink((operation, forward) => {
 
 const client = new ApolloClient({
     cache: new InMemoryCache(),
-    link: concat(authMiddleware, splitLink)
+    link: concat(authMiddleware, splitLink),
 });
 
 function App() {
