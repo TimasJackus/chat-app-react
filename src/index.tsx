@@ -17,6 +17,7 @@ import { Routes } from "./routes";
 import { User } from "./interfaces";
 import { WebSocketLink } from "@apollo/link-ws";
 import "./index.css";
+import "rsuite/dist/styles/rsuite-dark.css";
 
 const httpLink = new HttpLink({ uri: "http://localhost:4000/" });
 const wsLink = new WebSocketLink({

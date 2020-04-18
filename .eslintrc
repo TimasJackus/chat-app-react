@@ -1,0 +1,10 @@
+{
+    "extends": ["react-app", "plugin:prettier/recommended"],
+    "rules": {
+      "prettier/prettier": "warn",
+      "prefer-const": "error",
+      "no-nested-ternary": "error",
+      "curly": [2, "all"]
+    }
+  }
+  

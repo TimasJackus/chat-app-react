@@ -57,8 +57,12 @@ export default function ActiveChat({ activeChat, users }: IActiveChat) {
         }
     }, [subscription, refetch, activeChat]);
 
-    if (loading) return <Loader vertical center content="Loading..." />;
-    if (error) return <div>Something went wrong...</div>;
+    if (loading) {
+        return <Loader vertical center content="Loading..." />;
+    }
+    if (error) {
+        return <div>Something went wrong...</div>;
+    }
 
     return (
         <Container>
@@ -70,8 +74,8 @@ export default function ActiveChat({ activeChat, users }: IActiveChat) {
                 </h4>
             </Header>
             <Content>
-                {data.messages &&
-                    data.messages.map((message: any, index: number) => (
+                {data?.messages &&
+                    data?.messages.map((message: any, index: number) => (
                         <Message key={index} {...message} />
                     ))}
             </Content>
