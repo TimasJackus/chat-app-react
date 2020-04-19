@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 
 const panelStyles = {
     padding: "15px 20px",
-    color: "#aaa"
+    color: "#aaa",
 };
 
 const headerStyles = {
@@ -16,7 +16,7 @@ const headerStyles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1px solid #3C3F43"
+    borderBottom: "1px solid #3C3F43",
 };
 
 interface IChatList {
@@ -24,11 +24,11 @@ interface IChatList {
 }
 
 export default function ChatList({ users }: IChatList) {
-    const { onLogout } = useUserContext();
+    const { onLogout, user } = useUserContext();
     const history = useHistory();
 
     function handleChatClick(object: any) {
-        return function() {
+        return function () {
             history.push(`/user/${object.id}`);
         };
     }
@@ -38,7 +38,7 @@ export default function ChatList({ users }: IChatList) {
             <Sidenav appearance="subtle">
                 <Sidenav.Header>
                     <div style={headerStyles}>
-                        Timas Jackus
+                        {user?.email}
                         <Button onClick={onLogout}>Logout</Button>
                     </div>
                 </Sidenav.Header>

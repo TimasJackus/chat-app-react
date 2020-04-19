@@ -11,11 +11,12 @@ import {
 } from "rsuite";
 import { useStyles } from "./ActiveChat.styles";
 import { User } from "../../interfaces";
-import { useMutation, useQuery, useSubscription } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { SEND_MESSAGE } from "../../graphql/mutations";
 import { GET_PRIVATE_MESSAGES } from "../../graphql/queries";
 import Message from "../../components/Message/Message";
 import { MESSAGES_SUBSCRIPTION } from "../../graphql/subscriptions/MESSAGES_SUBSCRIPTION";
+import { useUserContext } from "../../contexts";
 
 interface IActiveChat {
     activeChat: string | null;
@@ -26,36 +27,47 @@ interface IActiveChat {
 export default function ActiveChat({ activeChat, users }: IActiveChat) {
     const styles = useStyles();
     const activeUser = users.find((user) => user.id === activeChat);
-    console.log(activeChat, activeUser);
     const [message, setMessage] = useState("");
-    const { loading, data, error, refetch } = useQuery(GET_PRIVATE_MESSAGES, {
-        variables: { userId: activeChat },
-        skip: !activeChat,
-    });
+    const { loading, data, error, subscribeToMore } = useQuery(
+        GET_PRIVATE_MESSAGES,
+        {
+            variables: { userId: activeChat },
+            skip: !activeChat,
+        }
+    );
+
     const [sendMessageMutation] = useMutation(SEND_MESSAGE, {
-        onCompleted: () => {
-            refetch();
+        update: function (cache, { data: { sendMessage } }) {
+            // @ts-ignore
+            const { messages } = cache.readQuery({
+                query: GET_PRIVATE_MESSAGES,
+                variables: { userId: activeChat },
+            });
+            console.log({ messages, sendMessage });
+            cache.writeQuery({
+                query: GET_PRIVATE_MESSAGES,
+                variables: { userId: activeChat },
+                data: { messages: messages.concat(sendMessage) },
+            });
         },
     });
-    const subscription = useSubscription(MESSAGES_SUBSCRIPTION);
 
     useEffect(() => {
-        console.log(subscription);
-        if (subscription.data?.subscribe?.content) {
-            if (subscription.data.subscribe.sender === activeChat) {
-                refetch();
-                // Notification.open({
-                //     title: "Message",
-                //     duration: 5000,
-                //     description: (
-                //         <div style={{ width: 350 }}>
-                //             <p>{subscription.data?.subscribe?.content}</p>
-                //         </div>
-                //     ),
-                // });
-            }
-        }
-    }, [subscription, refetch, activeChat]);
+        subscribeToMore({
+            document: MESSAGES_SUBSCRIPTION,
+            updateQuery: (prev, { subscriptionData }) => {
+                console.log({ prev, subscriptionData });
+                if (!subscriptionData.data) {
+                    return prev;
+                }
+                const newFeedItem = subscriptionData.data.subscribe;
+
+                return Object.assign({}, prev, {
+                    messages: [...prev.messages, newFeedItem],
+                });
+            },
+        });
+    }, [subscribeToMore]);
 
     if (loading) {
         return <Loader vertical center content="Loading..." />;
@@ -92,8 +104,9 @@ export default function ActiveChat({ activeChat, users }: IActiveChat) {
                             icon="arrow-right"
                             size="lg"
                             className={styles.blueIcon}
-                            onClick={() => {
-                                sendMessageMutation({
+                            onClick={async () => {
+                                setMessage("");
+                                await sendMessageMutation({
                                     variables: {
                                         data: {
                                             content: message,
@@ -102,7 +115,6 @@ export default function ActiveChat({ activeChat, users }: IActiveChat) {
                                         },
                                     },
                                 });
-                                setMessage("");
                             }}
                         />
                     </InputGroup.Addon>

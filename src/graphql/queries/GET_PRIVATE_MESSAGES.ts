@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const GET_PRIVATE_MESSAGES = gql`
-    query getUsers($userId: String!) {
-        messages: getPrivateMessages(userId: $userId) {
+    query messages($userId: String!) {
+        messages(userId: $userId) {
             id
             sender {
                 id
@@ -15,14 +15,6 @@ export const GET_PRIVATE_MESSAGES = gql`
             content
             createdAt
             updatedAt
-            recipient {
-                id
-                email
-                displayName
-                phoneNumber
-                description
-                imageUrl
-            }
         }
     }
 `;
