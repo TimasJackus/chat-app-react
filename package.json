@@ -27,6 +27,7 @@
         "rsuite": "^4.3.0",
         "subscriptions-transport-ws": "^0.9.16",
         "typescript": "~3.7.2",
+        "uniqolor": "^1.0.0",
         "yarn": "^1.22.4"
     },
     "devDependencies": {

@@ -11001,6 +11001,11 @@ uniq@^1.0.1:
   resolved "https://registry.yarnpkg.com/uniq/-/uniq-1.0.1.tgz#b31c5ae8254844a3a8281541ce2b04b865a734ff"
   integrity sha1-sxxa6CVIRKOoKBVBzisEuGWnNP8=
 
+uniqolor@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/uniqolor/-/uniqolor-1.0.0.tgz#d08efe6e29e857ecc084e63cf1ec1abaf760f985"
+  integrity sha512-NImCk5Vsmob41+hkeNCC3WubE2/QDEf4h0FA1TNFf+3MvGdEmue7rB88DEKWQJRy26TrGyOw5NI3bItZ6XyBYA==
+
 uniqs@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/uniqs/-/uniqs-2.0.0.tgz#ffede4b36b25290696e6e165d4a59edb998e6b02"

@@ -1,24 +1,31 @@
 import { createUseStyles } from "react-jss";
 
 export const useStyles = createUseStyles({
-    header: {
-        padding: 20,
-        height: 80,
+    container: {
         display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        borderBottom: "1px solid #3C3F43"
+        margin: "10px 20px",
     },
-    messageInput: {
-        background: "none",
-        border: 0,
-        padding: 11
+    bold: {
+        color: "#000",
+        fontWeight: "bold",
     },
-    footer: {
-        border: 0,
-        alignItems: "center"
+    avatar: {
+        background: "#3498FF",
     },
-    blueIcon: {
-        color: "#3498FF"
-    }
+    message: {
+        background: "#FFF",
+        padding: "5px 10px",
+        fontSize: 12,
+        marginLeft: 10,
+        width: "100%",
+        borderRadius: 4,
+    },
+    content: {
+        padding: "5px 0",
+    },
+    date: {
+        color: "#aaa",
+        fontSize: 10,
+        marginLeft: 10,
+    },
 });

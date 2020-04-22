@@ -3,9 +3,10 @@ import React, {
     useEffect,
     useState,
     useContext,
-    ReactNode
+    ReactNode,
 } from "react";
 import { User } from "../interfaces";
+import { disconnectSocket } from "../utils/subscriptionClient";
 
 interface IUserContext {
     user: User | null;
@@ -18,7 +19,7 @@ export const UserContext = createContext<IUserContext>({
     user: null,
     onLogout: () => {},
     onLogin: () => {},
-    loading: true
+    loading: true,
 });
 
 export const UserProvider = (props: { children: ReactNode }) => {
@@ -34,6 +35,7 @@ export const UserProvider = (props: { children: ReactNode }) => {
     }, []);
 
     const onLogout = () => {
+        disconnectSocket();
         localStorage.removeItem("current-user");
         setUser(null);
         setLoading(false);

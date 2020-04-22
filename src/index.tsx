@@ -17,43 +17,19 @@ import { Routes } from "./routes";
 import { User } from "./interfaces";
 import { WebSocketLink } from "@apollo/link-ws";
 import "./index.css";
-import "rsuite/dist/styles/rsuite-dark.css";
-import { SubscriptionClient } from "subscriptions-transport-ws";
+import "rsuite/dist/styles/rsuite-default.css";
+import { subscriptionClient } from "./utils/subscriptionClient";
 
 const httpLink = new HttpLink({ uri: "http://localhost:4000/" });
-const subscriptionClient = new SubscriptionClient(
-    "ws://localhost:4000/graphql",
-    {
-        reconnect: true,
-        lazy: true,
-        connectionParams: () => {
-            let user: string | User | null = localStorage.getItem(
-                "current-user"
-            );
-            console.log("get connectionParams()", user);
-            if (user) {
-                user = JSON.parse(user) as User;
-                return {
-                    authorization: user.token,
-                };
-            }
-            return null;
-        },
-    }
-);
 const wsLink = new WebSocketLink(subscriptionClient);
 
-console.log(wsLink);
-
-subscriptionClient.onConnected(() => {
-    setTimeout(() => {
-        console.log("remove connection");
-        subscriptionClient.unsubscribeAll();
-        subscriptionClient.close(true);
-    }, 5000);
-});
-
-// subscriptionClient.use([()]);
+// subscriptionClient.onConnected(() => {
+//     setTimeout(() => {
+//         console.log("remove connection");
+//         subscriptionClient.unsubscribeAll();
+//         subscriptionClient.close(true);
+//     }, 5000);
+// });
 
 const splitLink = split(
     ({ query }) => {
