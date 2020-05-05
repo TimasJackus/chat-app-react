@@ -19,6 +19,7 @@ export const MESSAGES_SUBSCRIPTION = gql`
                     content
                     createdAt
                     updatedAt
+                    replyCount
                 }
             }
         }

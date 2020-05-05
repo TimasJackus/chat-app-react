@@ -5,6 +5,20 @@ export const useStyles = createUseStyles({
     container: {
         background: ColorEnum.LightGrey,
         height: "100%",
+        borderLeft: 1,
+        borderLeftStyle: "solid",
+        borderColor: ColorEnum.LighterGrey,
+        WebkitTransition: "width .5s ease-in-out",
+        MozTransition: "width .5s ease-in-out",
+        OTransition: "width .5s ease-in-out",
+        transition: "width .5s ease-in-out",
+        overflow: "hidden",
+    },
+    open: {
+        width: 400,
+    },
+    closed: {
+        width: 0,
     },
     header: {
         height: 60,
@@ -12,14 +26,10 @@ export const useStyles = createUseStyles({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        background: ColorEnum.White,
         borderBottom: 1,
         borderBottomStyle: "solid",
         borderBottomColor: ColorEnum.LighterGrey,
-    },
-    content: {
-        height: "calc(100% - 100px)",
-        overflow: "auto",
+        background: ColorEnum.White,
     },
     footer: {
         padding: 10,

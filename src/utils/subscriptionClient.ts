@@ -1,5 +1,5 @@
 import { SubscriptionClient } from "subscriptions-transport-ws";
-import { User } from "../interfaces";
+import { IUser } from "../types/interfaces";
 
 export const subscriptionClient = new SubscriptionClient(
     "ws://localhost:4000/graphql",
@@ -7,11 +7,11 @@ export const subscriptionClient = new SubscriptionClient(
         reconnect: true,
         lazy: true,
         connectionParams: () => {
-            let user: string | User | null = localStorage.getItem(
+            let user: string | IUser | null = localStorage.getItem(
                 "current-user"
             );
             if (user) {
-                user = JSON.parse(user) as User;
+                user = JSON.parse(user) as IUser;
                 console.log("connected");
                 return {
                     authorization: user.token,

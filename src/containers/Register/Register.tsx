@@ -18,7 +18,7 @@ import { useMutation } from "@apollo/client";
 import { GraphQLError } from "graphql";
 import { REGISTER } from "../../graphql/mutations";
 
-export default function Login() {
+const Register: React.FC = () => {
     const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
     const [form, setForm] = useState({
         email: "",
@@ -117,4 +117,6 @@ export default function Login() {
             </Content>
         </Container>
     );
-}
+};
+
+export default Register;

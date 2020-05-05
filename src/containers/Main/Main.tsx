@@ -12,35 +12,37 @@ import {
 import { useRouteMatch } from "react-router-dom";
 import { MESSAGES_SUBSCRIPTION } from "../../graphql/subscriptions/MESSAGES_SUBSCRIPTION";
 import { readQuery } from "../../utils/readQuery";
-import { metadata } from "../../utils/metadata";
+import { getQueryByType } from "../../utils/getQueryByType";
+import Sidebar from "../Sidebar/Sidebar";
+import { useStyles } from "./Main.styles";
 
-export default function Main() {
+const Main = () => {
     const [activeChat, setActiveChat] = useState(null);
     const [activeChatType, setActiveChatType] = useState(null);
     const { loading, data, error, refetch } = useQuery(GET_USERS);
     const subscription = useSubscription(MESSAGES_SUBSCRIPTION);
     const client = useApolloClient();
     const match = useRouteMatch<any>();
+    const classes = useStyles();
 
     useEffect(() => {
         if (subscription.data?.subscribe) {
-            const { payload } = subscription.data?.subscribe;
-            console.log(subscription.data, activeChatType, payload);
+            console.log(subscription.data?.subscribe);
+            const { payload, event } = subscription.data?.subscribe;
             if (payload.chatId && payload.message) {
+                console.log(getQueryByType(event), event);
                 const cache = readQuery(client, {
-                    query: metadata(activeChatType).query,
+                    query: getQueryByType(event).query,
                     variables: {
-                        userId: payload.chatId,
-                        conversationId: payload.chatId,
+                        id: payload.chatId,
                     },
                 });
 
                 if (cache?.messages) {
                     client.writeQuery({
-                        query: metadata(activeChatType).query,
+                        query: getQueryByType(event).query,
                         variables: {
-                            userId: payload.chatId,
-                            conversationId: payload.chatId,
+                            id: payload.chatId,
                         },
                         data: {
                             messages: cache.messages.concat(payload.message),
@@ -71,7 +73,7 @@ export default function Main() {
     return (
         <ApolloConsumer>
             {(client) => (
-                <Container style={{ height: "100%" }}>
+                <Container className={classes.container}>
                     <ChatList
                         users={data.users}
                         conversations={data.conversations}
@@ -87,8 +89,11 @@ export default function Main() {
                         client={client}
                         refetch={refetch}
                     />
+                    <Sidebar />
                 </Container>
             )}
         </ApolloConsumer>
     );
-}
+};
+
+export default Main;

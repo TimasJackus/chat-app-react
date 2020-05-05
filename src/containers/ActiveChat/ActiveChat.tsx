@@ -1,43 +1,35 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-    Container,
-    Header,
-    Footer,
-    Input,
-    InputGroup,
-    Icon,
-    Loader,
-    Button,
-} from "rsuite";
+import { Container, Header, Footer, Loader, Button } from "rsuite";
 import { useStyles } from "./ActiveChat.styles";
-import { User } from "../../interfaces";
+import { IMessageData, IMessageVars, IUser } from "../../types/interfaces";
 import { useMutation, useQuery } from "@apollo/client";
 import { SEND_MESSAGE } from "../../graphql/mutations";
-import Message from "../../components/Message/Message";
 import { constructGroupName } from "../../utils/constructGroupName";
-import { metadata } from "../../utils/metadata";
+import { getQueryByType } from "../../utils/getQueryByType";
 import { LEAVE_CONVERSATION } from "../../graphql/mutations/LEAVE_CONVERSATION";
 import { useHistory } from "react-router-dom";
 import AddMembersModal from "../AddMembersModal/AddMembersModal";
+import MessagesList from "../MessagesList/MessagesList";
+import MessageInput from "../../components/MessageInput/MessageInput";
 
 interface IProps {
     activeChat: string | null;
     activeChatType: string | null;
-    users: User[];
+    users: IUser[];
     conversations: any[];
     client: any;
     channels: any[];
     refetch: () => void;
 }
 
-export default function ActiveChat({
+const ActiveChat: React.FC<IProps> = ({
     activeChat,
     users,
     conversations,
     activeChatType,
     channels,
     refetch,
-}: IProps) {
+}) => {
     const [showAddMembers, setShowAddMembers] = useState(false);
     const classes = useStyles();
     const contentRef = useRef<HTMLDivElement>(null);
@@ -47,21 +39,23 @@ export default function ActiveChat({
         conversations.find(
             (conversation: any) => conversation.id === activeChat
         ) || channels.find((channel: any) => channel.id === activeChat);
-    const [message, setMessage] = useState("");
-    const { loading, data, error } = useQuery(metadata(activeChatType).query, {
-        variables: { userId: activeChat, conversationId: activeChat },
-        skip: !activeChat,
-    });
+    const { loading, data, error } = useQuery<IMessageData, IMessageVars>(
+        getQueryByType(activeChatType).query,
+        {
+            variables: { id: activeChat },
+            skip: !activeChat,
+        }
+    );
 
     const [sendMessageMutation] = useMutation(SEND_MESSAGE, {
         update: function (cache, { data: { sendMessage } }) {
             const query = cache.readQuery<any>({
-                query: metadata(activeChatType).query,
-                variables: { userId: activeChat, conversationId: activeChat },
+                query: getQueryByType(activeChatType).query,
+                variables: { id: activeChat },
             });
             cache.writeQuery({
-                query: metadata(activeChatType).query,
-                variables: { userId: activeChat, conversationId: activeChat },
+                query: getQueryByType(activeChatType).query,
+                variables: { id: activeChat },
                 data: { messages: query.messages.concat(sendMessage) },
             });
         },
@@ -83,31 +77,33 @@ export default function ActiveChat({
         setShowAddMembers(!showAddMembers);
     }, [setShowAddMembers, showAddMembers]);
 
-    const handleMessageEnter = useCallback(async () => {
-        setMessage("");
-        if (activeChatType === "user") {
-            await sendMessageMutation({
-                variables: {
-                    data: {
-                        content: message,
-                        type: "Private",
-                        targetId: activeChat,
+    const handleSubmit = useCallback(
+        async (message: string) => {
+            if (activeChatType === "user") {
+                await sendMessageMutation({
+                    variables: {
+                        data: {
+                            content: message,
+                            type: "Private",
+                            targetId: activeChat,
+                        },
                     },
-                },
-            });
-        }
-        if (activeChatType === "conversation") {
-            await sendMessageMutation({
-                variables: {
-                    data: {
-                        content: message,
-                        type: "Conversation",
-                        targetId: activeChat,
+                });
+            }
+            if (activeChatType === "conversation") {
+                await sendMessageMutation({
+                    variables: {
+                        data: {
+                            content: message,
+                            type: "Conversation",
+                            targetId: activeChat,
+                        },
                     },
-                },
-            });
-        }
-    }, [sendMessageMutation, activeChat, message, activeChatType]);
+                });
+            }
+        },
+        [sendMessageMutation, activeChat, activeChatType]
+    );
 
     const handleLeaveConversation = useCallback(async () => {
         history.push("/");
@@ -148,7 +144,7 @@ export default function ActiveChat({
     if (loading) {
         return <Loader vertical center content="Loading..." />;
     }
-    if (error) {
+    if (error && activeChat) {
         return <div>Something went wrong...</div>;
     }
 
@@ -160,29 +156,12 @@ export default function ActiveChat({
                 </h5>
             </Header>
             <div className={classes.content} ref={contentRef}>
-                {data?.messages &&
-                    data?.messages.map((message: any, index: number) => (
-                        <Message key={index} {...message} />
-                    ))}
+                {data && data.messages && (
+                    <MessagesList messages={data.messages} />
+                )}
             </div>
             <Footer className={classes.footer}>
-                <InputGroup inside>
-                    <Input
-                        className={classes.input}
-                        value={message}
-                        onChange={setMessage}
-                        onPressEnter={handleMessageEnter}
-                        placeholder="Write your message here..."
-                    />
-                    <InputGroup.Addon>
-                        <Icon
-                            icon="arrow-right"
-                            size="lg"
-                            className={classes.blueIcon}
-                            onClick={handleMessageEnter}
-                        />
-                    </InputGroup.Addon>
-                </InputGroup>
+                <MessageInput handleSubmit={handleSubmit} />
             </Footer>
             <AddMembersModal
                 id={activeConversation?.id}
@@ -193,4 +172,6 @@ export default function ActiveChat({
             />
         </Container>
     );
-}
+};
+
+export default React.memo(ActiveChat);

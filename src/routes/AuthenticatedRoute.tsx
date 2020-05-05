@@ -1,10 +1,10 @@
-import React from "react";
-import { useUserContext } from "../contexts";
+import React, { useContext } from "react";
 import { Redirect, RouteProps, Route } from "react-router-dom";
 import { Loader } from "rsuite";
+import { UserContext } from "../contexts/UserContext";
 
 export const AuthenticatedRoute = (props: RouteProps) => {
-    const { user, loading } = useUserContext();
+    const { user, loading } = useContext(UserContext);
 
     if (loading) {
         return <Loader vertical center content="loading" />;

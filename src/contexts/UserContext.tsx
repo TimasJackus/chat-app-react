@@ -1,17 +1,11 @@
-import React, {
-    createContext,
-    useEffect,
-    useState,
-    useContext,
-    ReactNode,
-} from "react";
-import { User } from "../interfaces";
+import React, { createContext, useEffect, useState } from "react";
+import { IUser } from "../types/interfaces";
 import { disconnectSocket } from "../utils/subscriptionClient";
 
 interface IUserContext {
-    user: User | null;
+    user: IUser | null;
     onLogout: () => void;
-    onLogin: (newUser: User) => void;
+    onLogin: (newUser: IUser) => void;
     loading: boolean;
 }
 
@@ -22,8 +16,8 @@ export const UserContext = createContext<IUserContext>({
     loading: true,
 });
 
-export const UserProvider = (props: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+export const UserProvider: React.FC = ({ children }) => {
+    const [user, setUser] = useState<IUser | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -41,7 +35,7 @@ export const UserProvider = (props: { children: ReactNode }) => {
         setLoading(false);
     };
 
-    const onLogin = (newUser: User) => {
+    const onLogin = (newUser: IUser) => {
         localStorage.setItem("current-user", JSON.stringify(newUser));
         setUser(newUser);
         setLoading(false);
@@ -49,10 +43,6 @@ export const UserProvider = (props: { children: ReactNode }) => {
 
     const value = { user, onLogout, onLogin, loading };
     return (
-        <UserContext.Provider value={value}>
-            {props.children}
-        </UserContext.Provider>
+        <UserContext.Provider value={value}>{children}</UserContext.Provider>
     );
 };
-
-export const useUserContext = () => useContext(UserContext);

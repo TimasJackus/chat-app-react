@@ -1,4 +1,5 @@
 import { createUseStyles } from "react-jss";
+import { ColorEnum } from "../../types/enums/ColorEnum";
 
 export const useStyles = createUseStyles({
     container: {
@@ -23,9 +24,28 @@ export const useStyles = createUseStyles({
     content: {
         padding: "5px 0",
     },
+    flex: {
+        display: "flex",
+    },
+    alignCenter: {
+        alignItems: "center",
+    },
     date: {
         color: "#aaa",
         fontSize: 10,
         marginLeft: 10,
+    },
+    moreIconBtn: {
+        color: ColorEnum.Grey,
+        cursor: "pointer",
+        marginLeft: "auto",
+        paddingLeft: 5,
+        paddingRight: 5,
+        alignItems: "center",
+        borderRadius: 6,
+
+        "&:hover": {
+            backgroundColor: ColorEnum.LightGrey,
+        },
     },
 });

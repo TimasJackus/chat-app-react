@@ -3,27 +3,22 @@ import { ColorEnum } from "../../types/enums/ColorEnum";
 
 export const useStyles = createUseStyles({
     container: {
-        background: ColorEnum.LightGrey,
         height: "100%",
+        borderRight: 1,
+        borderRightStyle: "solid",
+        borderRightColor: ColorEnum.LighterGrey,
     },
     header: {
+        paddingLeft: 20,
+        paddingRight: 20,
+        fontSize: 16,
         height: 60,
-        padding: "20px 20px 15px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        background: ColorEnum.White,
         borderBottom: 1,
         borderBottomStyle: "solid",
         borderBottomColor: ColorEnum.LighterGrey,
-    },
-    content: {
-        height: "calc(100% - 100px)",
-        overflow: "auto",
-    },
-    footer: {
-        padding: 10,
-        border: 0,
-        alignItems: "center",
+        marginBottom: 10,
     },
 });

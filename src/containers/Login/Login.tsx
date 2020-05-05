@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
     Container,
     Content,
@@ -15,11 +15,11 @@ import {
 import { useStyles } from "./Login.styles";
 import { useHistory } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import { useUserContext } from "../../contexts";
 import { GraphQLError } from "graphql";
 import { LOGIN } from "../../graphql/mutations";
+import { UserContext } from "../../contexts/UserContext";
 
-export default function Login() {
+const Login: React.FC = () => {
     const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
     const [form, setForm] = useState({
         email: "",
@@ -27,7 +27,7 @@ export default function Login() {
     });
     const classes = useStyles();
     const history = useHistory();
-    const { onLogin } = useUserContext();
+    const { onLogin } = useContext(UserContext);
     const [login, { loading }] = useMutation(LOGIN, {
         onCompleted({ login }) {
             onLogin({
@@ -114,4 +114,6 @@ export default function Login() {
             </Content>
         </Container>
     );
-}
+};
+
+export default Login;

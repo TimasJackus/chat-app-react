@@ -1,24 +1,32 @@
-import React from "react";
-import { User } from "../../interfaces";
+import React, { useCallback, useContext } from "react";
+import { IMessage } from "../../types/interfaces";
 import { useStyles } from "./Message.styles";
-import { Avatar } from "rsuite";
+import { Avatar, Dropdown, Icon } from "rsuite";
 // @ts-ignore
 import uniqolor from "uniqolor";
+import clsx from "clsx";
+import { ColorEnum } from "../../types/enums/ColorEnum";
+import { SidebarUpdateContext } from "../../contexts/Sidebar";
 
-interface IMessage {
-    sender: User;
-    recipient: User;
-    updatedAt: Date;
-    content: string;
+interface IProps {
+    message: IMessage;
 }
 
-export default function Message({ content, sender, updatedAt }: IMessage) {
+const Message: React.FC<IProps> = ({ message }) => {
+    const { selectThread } = useContext(SidebarUpdateContext);
+    const { sender, content, updatedAt } = message;
     const classes = useStyles();
     const avatarBackground = uniqolor(
         sender.id + sender.email + sender.displayName
     );
-    const avatarColor = avatarBackground.isLight ? "#000" : "#FFF";
+    const avatarColor = avatarBackground.isLight
+        ? ColorEnum.Black
+        : ColorEnum.White;
     const date = new Date(updatedAt).toLocaleString();
+
+    const handleReplySelect = useCallback(() => {
+        selectThread(message);
+    }, [message, selectThread]);
 
     return (
         <div className={classes.container}>
@@ -32,12 +40,40 @@ export default function Message({ content, sender, updatedAt }: IMessage) {
                 {sender.displayName[0]}
             </Avatar>
             <div className={classes.message}>
-                <div className={classes.bold}>
-                    {sender.displayName}
+                <div
+                    className={clsx(
+                        classes.bold,
+                        classes.flex,
+                        classes.alignCenter
+                    )}
+                >
+                    <span>{sender.displayName}</span>
                     <span className={classes.date}>{date}</span>
+                    <span style={{ marginLeft: 20 }}>
+                        Replies: {message.replyCount}{" "}
+                    </span>
+                    <Dropdown
+                        style={{ marginLeft: "auto" }}
+                        placement="bottomEnd"
+                        renderTitle={() => {
+                            return (
+                                <Icon
+                                    className={classes.moreIconBtn}
+                                    icon="more"
+                                    size={"2x"}
+                                />
+                            );
+                        }}
+                    >
+                        <Dropdown.Item onSelect={handleReplySelect}>
+                            Reply
+                        </Dropdown.Item>
+                    </Dropdown>
                 </div>
                 <p className={classes.content}>{content}</p>
             </div>
         </div>
     );
-}
+};
+
+export default React.memo(Message);

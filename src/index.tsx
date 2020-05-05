@@ -12,13 +12,14 @@ import {
 } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
 import "rsuite/lib/styles/themes/dark/index.less";
-import { UserProvider } from "./contexts";
 import { Routes } from "./routes";
-import { User } from "./interfaces";
+import { IUser } from "./types/interfaces";
 import { WebSocketLink } from "@apollo/link-ws";
 import "./index.css";
 import "rsuite/dist/styles/rsuite-default.css";
 import { subscriptionClient } from "./utils/subscriptionClient";
+import { SidebarProvider } from "./contexts/Sidebar";
+import { UserProvider } from "./contexts/UserContext";
 
 const httpLink = new HttpLink({ uri: "http://localhost:4000/" });
 const wsLink = new WebSocketLink(subscriptionClient);
@@ -44,9 +45,9 @@ const splitLink = split(
 );
 
 const authMiddleware = new ApolloLink((operation, forward) => {
-    let user: string | User | null = localStorage.getItem("current-user");
+    let user: string | IUser | null = localStorage.getItem("current-user");
     if (user) {
-        user = JSON.parse(user) as User;
+        user = JSON.parse(user) as IUser;
         operation.setContext({
             headers: {
                 authorization: user.token,
@@ -66,7 +67,9 @@ function App() {
     return (
         <ApolloProvider client={client}>
             <UserProvider>
-                <Routes />
+                <SidebarProvider>
+                    <Routes />
+                </SidebarProvider>
             </UserProvider>
         </ApolloProvider>
     );

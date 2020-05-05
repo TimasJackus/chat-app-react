@@ -103,4 +103,4 @@ const CreateChannelModal: React.FC<IProps> = ({
     );
 };
 
-export default CreateChannelModal;
+export default React.memo(CreateChannelModal);

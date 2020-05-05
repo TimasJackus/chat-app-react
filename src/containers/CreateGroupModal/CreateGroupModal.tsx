@@ -84,4 +84,4 @@ const CreateGroupModal: React.FC<IProps> = ({
     );
 };
 
-export default CreateGroupModal;
+export default React.memo(CreateGroupModal);

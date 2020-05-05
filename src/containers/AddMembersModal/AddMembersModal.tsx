@@ -87,4 +87,4 @@ const AddMembersModal: React.FC<IProps> = ({
     );
 };
 
-export default AddMembersModal;
+export default React.memo(AddMembersModal);

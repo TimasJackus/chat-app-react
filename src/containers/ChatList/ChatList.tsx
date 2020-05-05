@@ -1,24 +1,16 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { Sidenav, Sidebar, Dropdown, Button, Icon } from "rsuite";
-import { User } from "../../interfaces";
-import { useUserContext } from "../../contexts";
+import { IUser } from "../../types/interfaces";
 import { useHistory } from "react-router-dom";
 import CreateGroupModal from "../CreateGroupModal/CreateGroupModal";
 import { constructGroupName } from "../../utils/constructGroupName";
+import { useStyles } from "./ChatList.styles";
 import CreateChannelModal from "../CreateChannelModal/CreateChannelModal";
+import { UserContext } from "../../contexts/UserContext";
 
 const panelStyles = {
     padding: "4px 20px",
     color: "#aaa",
-};
-
-const headerStyles = {
-    padding: "20px 20px 10px",
-    fontSize: 16,
-    height: 60,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
 };
 
 const iconStyle = {
@@ -28,22 +20,23 @@ const iconStyle = {
     marginLeft: 15,
 };
 
-interface IChatList {
-    users: User[];
+interface IProps {
+    users: IUser[];
     conversations: any[];
     channels: any[];
     refetch: () => void;
 }
 
-export default function ChatList({
+const ChatList: React.FC<IProps> = ({
     users,
     conversations,
     refetch,
     channels,
-}: IChatList) {
+}) => {
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [showChannelModal, setShowChannelModal] = useState(false);
-    const { onLogout, user } = useUserContext();
+    const { onLogout, user } = useContext(UserContext);
+    const classes = useStyles();
     const history = useHistory();
 
     const toggleGroupModal = useCallback(() => {
@@ -62,10 +55,10 @@ export default function ChatList({
 
     return (
         <>
-            <Sidebar style={{ height: "100%" }}>
+            <Sidebar className={classes.container}>
                 <Sidenav appearance="subtle">
                     <Sidenav.Header>
-                        <div style={headerStyles}>
+                        <div className={classes.header}>
                             {user?.displayName}
                             <Button color="blue" onClick={onLogout}>
                                 Logout
@@ -77,7 +70,7 @@ export default function ChatList({
                             <Dropdown.Item panel style={panelStyles}>
                                 Direct Messages
                             </Dropdown.Item>
-                            {users.map((user: User, index: number) => (
+                            {users.map((user: IUser, index: number) => (
                                 <Dropdown.Item
                                     key={user.id}
                                     eventKey={index}
@@ -156,4 +149,6 @@ export default function ChatList({
             />
         </>
     );
-}
+};
+
+export default React.memo(ChatList);

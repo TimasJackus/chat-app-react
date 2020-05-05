@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
-export const GET_CONVERSATION_MESSAGES = gql`
-    query conversationMessages($id: String!) {
-        messages: conversationMessages(conversationId: $id) {
+export const SEND_REPLY = gql`
+    mutation sendMessage($data: ReplyInput!) {
+        sendReply(data: $data) {
             id
             sender {
                 id
