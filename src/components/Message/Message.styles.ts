@@ -13,13 +13,42 @@ export const useStyles = createUseStyles({
     avatar: {
         background: "#3498FF",
     },
+    noBorderBottomRadius: {
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+    },
+    withBorderBottomRadius: {
+        borderBottomLeftRadius: 4,
+        borderBottomRightRadius: 4,
+    },
+    replyWrapper: {
+        marginLeft: 10,
+        background: ColorEnum.BackgroundGrey,
+        borderTopWidth: 1,
+        borderTopColor: ColorEnum.BorderGrey,
+        borderTopStyle: "solid",
+        padding: "5px 10px",
+        fontSize: 12,
+    },
+    repliesCount: {
+        color: ColorEnum.Blue,
+        cursor: "pointer",
+        fontWeight: 700,
+
+        "&:hover": {
+            textDecoration: "underline",
+        },
+    },
+    messageWrapper: {
+        width: "100%",
+    },
     message: {
-        background: "#FFF",
+        background: ColorEnum.White,
         padding: "5px 10px",
         fontSize: 12,
         marginLeft: 10,
-        width: "100%",
-        borderRadius: 4,
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
     },
     content: {
         padding: "5px 0",

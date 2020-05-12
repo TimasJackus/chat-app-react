@@ -89,7 +89,11 @@ const Main = () => {
                         client={client}
                         refetch={refetch}
                     />
-                    <Sidebar />
+                    <Sidebar
+                        users={data.users}
+                        conversations={data.conversations}
+                        channels={data.channels}
+                    />
                 </Container>
             )}
         </ApolloConsumer>

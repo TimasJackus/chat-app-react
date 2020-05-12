@@ -17,8 +17,8 @@ interface IProps {
     activeChatType: string | null;
     users: IUser[];
     conversations: any[];
-    client: any;
     channels: any[];
+    client: any;
     refetch: () => void;
 }
 
@@ -157,11 +157,22 @@ const ActiveChat: React.FC<IProps> = ({
             </Header>
             <div className={classes.content} ref={contentRef}>
                 {data && data.messages && (
-                    <MessagesList messages={data.messages} />
+                    <MessagesList
+                        users={users}
+                        conversations={conversations}
+                        channels={channels}
+                        messages={data.messages}
+                        isThread={false}
+                    />
                 )}
             </div>
             <Footer className={classes.footer}>
-                <MessageInput handleSubmit={handleSubmit} />
+                <MessageInput
+                    users={users}
+                    conversations={conversations}
+                    channels={channels}
+                    handleSubmit={handleSubmit}
+                />
             </Footer>
             <AddMembersModal
                 id={activeConversation?.id}

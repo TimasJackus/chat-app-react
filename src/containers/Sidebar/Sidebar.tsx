@@ -10,10 +10,15 @@ import { SEND_REPLY } from "../../graphql/mutations/SEND_REPLY";
 import MessagesList from "../MessagesList/MessagesList";
 import { GET_REPLIES } from "../../graphql/queries/GET_REPLIES";
 import { IReplyData, IReplyVars } from "../../types/interfaces/Reply";
+import { IUser } from "../../types/interfaces";
 
-interface IProps {}
+interface IProps {
+    users: IUser[];
+    conversations: any[];
+    channels: any[];
+}
 
-const Sidebar: React.FC<IProps> = () => {
+const Sidebar: React.FC<IProps> = ({ users, conversations, channels }) => {
     const { isOpen, selectedThread } = useContext(SidebarContext);
     const { close } = useContext(SidebarUpdateContext);
     const classes = useStyles();
@@ -70,13 +75,30 @@ const Sidebar: React.FC<IProps> = () => {
             </Header>
             {selectedThread && data && (
                 <div>
-                    <Message message={selectedThread} />
+                    <Message
+                        users={users}
+                        conversations={conversations}
+                        channels={channels}
+                        message={selectedThread}
+                        isThreadMessage={true}
+                    />
                     <Divider />
-                    <MessagesList messages={data.messages} />
+                    <MessagesList
+                        users={users}
+                        conversations={conversations}
+                        channels={channels}
+                        messages={data.messages}
+                        isThread={true}
+                    />
                 </div>
             )}
             <Footer className={classes.footer}>
-                <MessageInput handleSubmit={handleSubmit} />
+                <MessageInput
+                    users={users}
+                    conversations={conversations}
+                    channels={channels}
+                    handleSubmit={handleSubmit}
+                />
             </Footer>
         </div>
     );

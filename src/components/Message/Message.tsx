@@ -1,5 +1,5 @@
 import React, { useCallback, useContext } from "react";
-import { IMessage } from "../../types/interfaces";
+import { IMessage, IUser } from "../../types/interfaces";
 import { useStyles } from "./Message.styles";
 import { Avatar, Dropdown, Icon } from "rsuite";
 // @ts-ignore
@@ -7,12 +7,23 @@ import uniqolor from "uniqolor";
 import clsx from "clsx";
 import { ColorEnum } from "../../types/enums/ColorEnum";
 import { SidebarUpdateContext } from "../../contexts/Sidebar";
+import MessageInput from "../MessageInput/MessageInput";
 
 interface IProps {
     message: IMessage;
+    isThreadMessage: boolean;
+    users: IUser[];
+    conversations: any[];
+    channels: any[];
 }
 
-const Message: React.FC<IProps> = ({ message }) => {
+const Message: React.FC<IProps> = ({
+    message,
+    isThreadMessage,
+    users,
+    conversations,
+    channels,
+}) => {
     const { selectThread } = useContext(SidebarUpdateContext);
     const { sender, content, updatedAt } = message;
     const classes = useStyles();
@@ -28,6 +39,13 @@ const Message: React.FC<IProps> = ({ message }) => {
         selectThread(message);
     }, [message, selectThread]);
 
+    const renderTitle = useCallback(
+        () => <Icon className={classes.moreIconBtn} icon="more" size={"2x"} />,
+        [classes]
+    );
+
+    const showReplyCount = message.replyCount > 0 && !isThreadMessage;
+
     return (
         <div className={classes.container}>
             <Avatar
@@ -39,38 +57,58 @@ const Message: React.FC<IProps> = ({ message }) => {
             >
                 {sender.displayName[0]}
             </Avatar>
-            <div className={classes.message}>
+            <div className={classes.messageWrapper}>
                 <div
-                    className={clsx(
-                        classes.bold,
-                        classes.flex,
-                        classes.alignCenter
-                    )}
+                    className={clsx({
+                        [classes.message]: true,
+                        [classes.noBorderBottomRadius]: showReplyCount,
+                        [classes.withBorderBottomRadius]: !showReplyCount,
+                    })}
                 >
-                    <span>{sender.displayName}</span>
-                    <span className={classes.date}>{date}</span>
-                    <span style={{ marginLeft: 20 }}>
-                        Replies: {message.replyCount}{" "}
-                    </span>
-                    <Dropdown
-                        style={{ marginLeft: "auto" }}
-                        placement="bottomEnd"
-                        renderTitle={() => {
-                            return (
-                                <Icon
-                                    className={classes.moreIconBtn}
-                                    icon="more"
-                                    size={"2x"}
-                                />
-                            );
-                        }}
+                    <div
+                        className={clsx(
+                            classes.bold,
+                            classes.flex,
+                            classes.alignCenter
+                        )}
                     >
-                        <Dropdown.Item onSelect={handleReplySelect}>
-                            Reply
-                        </Dropdown.Item>
-                    </Dropdown>
+                        <span>{sender.displayName}</span>
+                        <span className={classes.date}>{date}</span>
+                        <Dropdown
+                            style={{ marginLeft: "auto" }}
+                            placement="bottomEnd"
+                            renderTitle={renderTitle}
+                        >
+                            <Dropdown.Item onSelect={handleReplySelect}>
+                                Reply
+                            </Dropdown.Item>
+                        </Dropdown>
+                    </div>
+                    <div className={classes.content}>
+                        <MessageInput
+                            users={users}
+                            conversations={conversations}
+                            channels={channels}
+                            html={content}
+                            readOnly={true}
+                        />
+                    </div>
                 </div>
-                <p className={classes.content}>{content}</p>
+                {showReplyCount && (
+                    <div
+                        className={clsx(
+                            classes.replyWrapper,
+                            classes.withBorderBottomRadius
+                        )}
+                    >
+                        <span
+                            onClick={handleReplySelect}
+                            className={classes.repliesCount}
+                        >
+                            {message.replyCount} replies
+                        </span>
+                    </div>
+                )}
             </div>
         </div>
     );
