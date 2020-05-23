@@ -2,7 +2,7 @@ import { SubscriptionClient } from "subscriptions-transport-ws";
 import { IUser } from "../types/interfaces";
 
 export const subscriptionClient = new SubscriptionClient(
-    "ws://localhost:4000/graphql",
+    "ws://dc-itc.el.vgtu.lt:22080/stud-18-backend/graphql",
     {
         reconnect: true,
         lazy: true,

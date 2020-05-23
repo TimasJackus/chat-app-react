@@ -24,7 +24,7 @@ import { createUploadLink } from "apollo-upload-client";
 
 const wsLink = new WebSocketLink(subscriptionClient);
 const uploadLink = createUploadLink({
-    uri: "http://localhost:4000/graphql",
+    uri: "http://dc-itc.el.vgtu.lt:22080/stud-18-backend/graphql",
 }) as any;
 
 const splitLink = split(
