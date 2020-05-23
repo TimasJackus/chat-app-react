@@ -27,10 +27,8 @@ const Main = () => {
 
     useEffect(() => {
         if (subscription.data?.subscribe) {
-            console.log(subscription.data?.subscribe);
             const { payload, event } = subscription.data?.subscribe;
             if (payload.chatId && payload.message) {
-                console.log(getQueryByType(event), event);
                 const cache = readQuery(client, {
                     query: getQueryByType(event).query,
                     variables: {

@@ -20,6 +20,8 @@ export const MESSAGES_SUBSCRIPTION = gql`
                     createdAt
                     updatedAt
                     replyCount
+                    imageUrl
+                    type
                 }
             }
         }

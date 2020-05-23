@@ -16,6 +16,9 @@ export const GET_REPLIES = gql`
             createdAt
             updatedAt
             replyCount
+            imageUrl
+            type
+            pinned
         }
     }
 `;

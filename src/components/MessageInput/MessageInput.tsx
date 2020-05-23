@@ -16,9 +16,10 @@ import { defaultSuggestionsFilter } from "draft-js-mention-plugin";
 // @ts-ignore
 import { clearEditorContent } from "draftjs-utils";
 import { Icon } from "rsuite";
-import { IUser } from "../../types/interfaces";
+import { IMessage, IUser } from "../../types/interfaces";
 import { useHistory } from "react-router-dom";
 import clsx from "clsx";
+import Toolbar from "./Toolbar/Toolbar";
 
 const positionSuggestions = (settings: any) => {
     const popoverWidth = 250;
@@ -41,10 +42,12 @@ const positionSuggestions = (settings: any) => {
 interface IProps {
     html?: string;
     readOnly?: boolean;
-    handleSubmit?: (message: string) => void;
+    handleSubmit?: (message: string | null, image: File | null) => void;
     users: IUser[];
     conversations: any[];
     channels: any[];
+    isEditing?: boolean;
+    handleCancelEdit?: () => void;
 }
 
 const MessageInput: React.FC<IProps> = ({
@@ -52,8 +55,9 @@ const MessageInput: React.FC<IProps> = ({
     readOnly,
     html,
     users,
-    conversations,
     channels,
+    isEditing,
+    handleCancelEdit,
 }) => {
     const history = useHistory();
     const classes = useStyles();
@@ -82,7 +86,7 @@ const MessageInput: React.FC<IProps> = ({
             const raw: any = JSON.stringify(
                 convertToRaw(editorState.getCurrentContent())
             );
-            handleSubmit(raw);
+            handleSubmit(raw, null);
 
             const state = clearEditorContent(editorState);
             handleStateChange(state);
@@ -179,55 +183,66 @@ const MessageInput: React.FC<IProps> = ({
         [mentions, setSuggestions]
     );
 
+    const handleCancel = useCallback(() => {
+        if (handleCancelEdit) {
+            handleCancelEdit();
+        }
+    }, [handleCancelEdit]);
+
+    const allowEdit = useMemo(() => {
+        if (readOnly) {
+            return isEditing;
+        }
+        return true;
+    }, [readOnly, isEditing]);
+
     return (
-        <div className={classes.inputWrapper}>
-            <div className={clsx({ [classes.input]: !readOnly })}>
-                <Editor
-                    editorState={editorState}
-                    onChange={handleStateChange}
-                    placeholder="Enter your text here..."
-                    readOnly={readOnly}
-                    plugins={[
-                        Emoji.emojiPlugin,
-                        Mentions.mentionPlugin,
-                        HashTag.hashTagPlugin,
-                    ]}
+        <div className={classes.flex}>
+            <div className={classes.inputWrapper}>
+                <div
+                    className={clsx({
+                        [classes.input]: allowEdit,
+                        [classes.border]: isEditing,
+                    })}
+                >
+                    <Editor
+                        editorState={editorState}
+                        onChange={handleStateChange}
+                        placeholder="Enter your text here..."
+                        readOnly={!allowEdit}
+                        plugins={[
+                            Emoji.emojiPlugin,
+                            Mentions.mentionPlugin,
+                            HashTag.hashTagPlugin,
+                        ]}
+                    />
+                </div>
+                <Emoji.EmojiSuggestions />
+                <Mentions.MentionSuggestions
+                    onSearchChange={onSearchChange}
+                    onAddMention={() => {}}
+                    suggestions={suggestions}
                 />
+                {allowEdit && (
+                    <Icon
+                        icon="arrow-right"
+                        size="lg"
+                        className={classes.blueIcon}
+                        onClick={handleMessageEnter}
+                    />
+                )}
+                {isEditing && (
+                    <Icon
+                        icon="close"
+                        size="lg"
+                        className={clsx(classes.blueIcon, classes.grey)}
+                        onClick={handleCancel}
+                    />
+                )}
             </div>
-            <Emoji.EmojiSuggestions />
-            <Mentions.MentionSuggestions
-                onSearchChange={onSearchChange}
-                onAddMention={() => {}}
-                suggestions={suggestions}
-            />
-            {!readOnly && (
-                <Icon
-                    icon="arrow-right"
-                    size="lg"
-                    className={classes.blueIcon}
-                    onClick={handleMessageEnter}
-                />
-            )}
+            {!readOnly && <Toolbar handleSubmit={handleSubmit} />}
         </div>
     );
 };
 
 export default MessageInput;
-
-// <InputGroup inside>
-//     {/*<Input*/}
-//     {/*    className={classes.input}*/}
-//     {/*    value={message}*/}
-//     {/*    onChange={setMessage}*/}
-//     {/*    onPressEnter={handleMessageEnter}*/}
-//     {/*    placeholder="Write your message here..."*/}
-//     {/*/>*/}
-//     {/*<InputGroup.Addon>*/}
-//     {/*    <Icon*/}
-//     {/*        icon="arrow-right"*/}
-//     {/*        size="lg"*/}
-//     {/*        className={classes.blueIcon}*/}
-//     {/*        onClick={handleMessageEnter}*/}
-//     {/*    />*/}
-//     {/*</InputGroup.Addon>*/}
-// </InputGroup>

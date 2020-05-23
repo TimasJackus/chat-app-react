@@ -26,4 +26,10 @@ export const useStyles = createUseStyles({
         border: 0,
         alignItems: "center",
     },
+    yellow: {
+        color: "#FFA500",
+    },
+    pointer: {
+        cursor: "pointer",
+    },
 });

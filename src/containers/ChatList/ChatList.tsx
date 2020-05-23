@@ -7,6 +7,7 @@ import { constructGroupName } from "../../utils/constructGroupName";
 import { useStyles } from "./ChatList.styles";
 import CreateChannelModal from "../CreateChannelModal/CreateChannelModal";
 import { UserContext } from "../../contexts/UserContext";
+import SearchModal from "../SearchModal/SearchModal";
 
 const panelStyles = {
     padding: "4px 20px",
@@ -35,6 +36,7 @@ const ChatList: React.FC<IProps> = ({
 }) => {
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [showChannelModal, setShowChannelModal] = useState(false);
+    const [showSearchModal, setShowSearchModal] = useState(false);
     const { onLogout, user } = useContext(UserContext);
     const classes = useStyles();
     const history = useHistory();
@@ -42,6 +44,10 @@ const ChatList: React.FC<IProps> = ({
     const toggleGroupModal = useCallback(() => {
         setShowGroupModal(!showGroupModal);
     }, [showGroupModal]);
+
+    const toggleSearchModal = useCallback(() => {
+        setShowSearchModal(!showSearchModal);
+    }, [setShowSearchModal, showSearchModal]);
 
     const toggleChannelModal = useCallback(() => {
         setShowChannelModal(!showChannelModal);
@@ -66,19 +72,72 @@ const ChatList: React.FC<IProps> = ({
                         </div>
                     </Sidenav.Header>
                     <Sidenav.Body>
+                        <Button
+                            style={{ marginLeft: 20 }}
+                            onClick={toggleSearchModal}
+                        >
+                            <Icon icon="search" style={{ paddingRight: 5 }} />
+                            Search
+                        </Button>
+                        {(conversations.filter((c) => c.starred).length > 0 ||
+                            channels.filter((c) => c.starred)) && (
+                            <Dropdown.Menu style={{ background: "none" }}>
+                                <Dropdown.Item panel style={panelStyles}>
+                                    Starred
+                                </Dropdown.Item>
+                                {conversations
+                                    .filter((c) => c.starred)
+                                    .map((conversation: any, index: number) => (
+                                        <Dropdown.Item
+                                            key={conversation.id}
+                                            eventKey={index}
+                                            onSelect={handleChatClick(
+                                                "conversation",
+                                                conversation
+                                            )}
+                                        >
+                                            {constructGroupName(
+                                                conversation.members,
+                                                true
+                                            )}
+                                        </Dropdown.Item>
+                                    ))}
+                                {channels
+                                    .filter((c) => c.starred)
+                                    .map((channel: any, index: number) => (
+                                        <Dropdown.Item
+                                            key={channel.id}
+                                            eventKey={index}
+                                            onSelect={handleChatClick(
+                                                "conversation",
+                                                channel
+                                            )}
+                                        >
+                                            #{channel.name}
+                                        </Dropdown.Item>
+                                    ))}
+                                <Dropdown.Item divider />
+                            </Dropdown.Menu>
+                        )}
                         <Dropdown.Menu style={{ background: "none" }}>
                             <Dropdown.Item panel style={panelStyles}>
                                 Direct Messages
                             </Dropdown.Item>
-                            {users.map((user: IUser, index: number) => (
-                                <Dropdown.Item
-                                    key={user.id}
-                                    eventKey={index}
-                                    onSelect={handleChatClick("user", user)}
-                                >
-                                    {user.displayName}
-                                </Dropdown.Item>
-                            ))}
+                            {users.length > 0 ? (
+                                users.map((user: IUser, index: number) => (
+                                    <Dropdown.Item
+                                        key={user.id}
+                                        eventKey={index}
+                                        onSelect={handleChatClick("user", user)}
+                                    >
+                                        {user.displayName}
+                                    </Dropdown.Item>
+                                ))
+                            ) : (
+                                <div style={{ padding: "5px 20px" }}>
+                                    No results
+                                </div>
+                            )}
                             <Dropdown.Item divider />
                         </Dropdown.Menu>
                         <Dropdown.Menu style={{ background: "none" }}>
@@ -90,22 +149,29 @@ const ChatList: React.FC<IProps> = ({
                                     onClick={toggleGroupModal}
                                 />
                             </Dropdown.Item>
-                            {conversations.map(
-                                (conversation: any, index: number) => (
-                                    <Dropdown.Item
-                                        key={conversation.id}
-                                        eventKey={index}
-                                        onSelect={handleChatClick(
-                                            "conversation",
-                                            conversation
-                                        )}
-                                    >
-                                        {constructGroupName(
-                                            conversation.members,
-                                            true
-                                        )}
-                                    </Dropdown.Item>
-                                )
+                            {conversations.filter((c) => !c.starred).length >
+                            0 ? (
+                                conversations
+                                    .filter((c) => !c.starred)
+                                    .map((conversation: any, index: number) => (
+                                        <Dropdown.Item
+                                            key={conversation.id}
+                                            eventKey={index}
+                                            onSelect={handleChatClick(
+                                                "conversation",
+                                                conversation
+                                            )}
+                                        >
+                                            {constructGroupName(
+                                                conversation.members,
+                                                true
+                                            )}
+                                        </Dropdown.Item>
+                                    ))
+                            ) : (
+                                <div style={{ padding: "5px 20px" }}>
+                                    No results
+                                </div>
                             )}
                             <Dropdown.Item divider />
                         </Dropdown.Menu>
@@ -118,23 +184,35 @@ const ChatList: React.FC<IProps> = ({
                                     onClick={toggleChannelModal}
                                 />
                             </Dropdown.Item>
-                            {channels.map((channel: any, index: number) => (
-                                <Dropdown.Item
-                                    key={channel.id}
-                                    eventKey={index}
-                                    onSelect={handleChatClick(
-                                        "conversation",
-                                        channel
-                                    )}
-                                >
-                                    #{channel.name}
-                                </Dropdown.Item>
-                            ))}
+                            {channels.filter((c) => !c.starred).length > 0 ? (
+                                channels
+                                    .filter((c) => !c.starred)
+                                    .map((channel: any, index: number) => (
+                                        <Dropdown.Item
+                                            key={channel.id}
+                                            eventKey={index}
+                                            onSelect={handleChatClick(
+                                                "conversation",
+                                                channel
+                                            )}
+                                        >
+                                            #{channel.name}
+                                        </Dropdown.Item>
+                                    ))
+                            ) : (
+                                <div style={{ padding: "5px 20px" }}>
+                                    No results
+                                </div>
+                            )}
                             <Dropdown.Item divider />
                         </Dropdown.Menu>
                     </Sidenav.Body>
                 </Sidenav>
             </Sidebar>
+            <SearchModal
+                open={showSearchModal}
+                handleClose={toggleSearchModal}
+            />
             <CreateGroupModal
                 open={showGroupModal}
                 handleClose={toggleGroupModal}

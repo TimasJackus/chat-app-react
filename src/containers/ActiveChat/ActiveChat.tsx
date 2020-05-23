@@ -1,9 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Container, Header, Footer, Loader, Button } from "rsuite";
+import {
+    Container,
+    Header,
+    Footer,
+    Loader,
+    Button,
+    Icon,
+    Dropdown,
+} from "rsuite";
 import { useStyles } from "./ActiveChat.styles";
 import { IMessageData, IMessageVars, IUser } from "../../types/interfaces";
 import { useMutation, useQuery } from "@apollo/client";
-import { SEND_MESSAGE } from "../../graphql/mutations";
+import { SEND_MESSAGE, TOGGLE_STAR } from "../../graphql/mutations";
 import { constructGroupName } from "../../utils/constructGroupName";
 import { getQueryByType } from "../../utils/getQueryByType";
 import { LEAVE_CONVERSATION } from "../../graphql/mutations/LEAVE_CONVERSATION";
@@ -11,6 +19,10 @@ import { useHistory } from "react-router-dom";
 import AddMembersModal from "../AddMembersModal/AddMembersModal";
 import MessagesList from "../MessagesList/MessagesList";
 import MessageInput from "../../components/MessageInput/MessageInput";
+import { FileType } from "rsuite/es/Uploader";
+import clsx from "clsx";
+import { GET_USERS } from "../../graphql/queries";
+import LeaveConfirmModal from "../LeaveConfirmModal/LeaveConfirmModal";
 
 interface IProps {
     activeChat: string | null;
@@ -31,6 +43,7 @@ const ActiveChat: React.FC<IProps> = ({
     refetch,
 }) => {
     const [showAddMembers, setShowAddMembers] = useState(false);
+    const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
     const classes = useStyles();
     const contentRef = useRef<HTMLDivElement>(null);
     const activeUser = users.find((user) => user.id === activeChat);
@@ -67,6 +80,37 @@ const ActiveChat: React.FC<IProps> = ({
         },
     });
 
+    const [toggleStar] = useMutation(TOGGLE_STAR, {
+        update: function (cache, { data: { toggleStar } }) {
+            const query = cache.readQuery<any>({
+                query: GET_USERS,
+            });
+            cache.writeQuery({
+                query: GET_USERS,
+                data: {
+                    conversations: query.conversations.map((c: any) => {
+                        return {
+                            ...c,
+                            starred:
+                                c.id === toggleStar.id
+                                    ? toggleStar.starred
+                                    : c.starred,
+                        };
+                    }),
+                    channels: query.channels.map((c: any) => {
+                        return {
+                            ...c,
+                            starred:
+                                c.id === toggleStar.id
+                                    ? toggleStar.starred
+                                    : c.starred,
+                        };
+                    }),
+                },
+            });
+        },
+    });
+
     const scrollToBottom = useCallback(() => {
         if (contentRef.current) {
             contentRef.current.scrollTo(0, contentRef.current.scrollHeight);
@@ -78,7 +122,8 @@ const ActiveChat: React.FC<IProps> = ({
     }, [setShowAddMembers, showAddMembers]);
 
     const handleSubmit = useCallback(
-        async (message: string) => {
+        async (message: string | null, image: File | null) => {
+            console.log(image);
             if (activeChatType === "user") {
                 await sendMessageMutation({
                     variables: {
@@ -87,6 +132,7 @@ const ActiveChat: React.FC<IProps> = ({
                             type: "Private",
                             targetId: activeChat,
                         },
+                        image,
                     },
                 });
             }
@@ -98,6 +144,7 @@ const ActiveChat: React.FC<IProps> = ({
                             type: "Conversation",
                             targetId: activeChat,
                         },
+                        image,
                     },
                 });
             }
@@ -105,16 +152,34 @@ const ActiveChat: React.FC<IProps> = ({
         [sendMessageMutation, activeChat, activeChatType]
     );
 
+    const handleLeaveClose = useCallback(() => {
+        setShowLeaveConfirmModal(false);
+    }, [setShowLeaveConfirmModal]);
+
+    const handleLeaveClick = useCallback(() => {
+        setShowLeaveConfirmModal(true);
+    }, [setShowLeaveConfirmModal]);
+
     const handleLeaveConversation = useCallback(async () => {
         history.push("/");
         await leaveConversation({ variables: { id: activeConversation.id } });
     }, [history, activeConversation, leaveConversation]);
 
+    const handleLeaveConfirm = useCallback(async () => {
+        setShowLeaveConfirmModal(false);
+        await handleLeaveConversation();
+    }, [handleLeaveConversation, setShowLeaveConfirmModal]);
+
     const renderLeaveButton = useCallback(() => {
         if (activeChatType === "conversation" && activeConversation) {
-            return <Button onClick={handleLeaveConversation}>Leave</Button>;
+            return <Button onClick={handleLeaveClick}>Leave</Button>;
         }
-    }, [handleLeaveConversation, activeConversation, activeChatType]);
+    }, [
+        handleLeaveConversation,
+        activeConversation,
+        activeChatType,
+        handleLeaveClick,
+    ]);
 
     const renderAddMembers = useCallback(() => {
         if (activeChatType === "conversation" && activeConversation) {
@@ -137,6 +202,26 @@ const ActiveChat: React.FC<IProps> = ({
         return "None selected";
     }, [activeChatType, activeUser, activeConversation]);
 
+    const handleStarClick = useCallback(async () => {
+        await toggleStar({ variables: { id: activeConversation.id } });
+    }, [toggleStar, activeConversation]);
+
+    const renderStar = useCallback(() => {
+        if (activeChatType === "conversation" && activeConversation) {
+            return (
+                <Icon
+                    icon={activeConversation.starred ? "star" : "star-o"}
+                    onClick={handleStarClick}
+                    style={{ marginLeft: 10 }}
+                    className={clsx({
+                        [classes.pointer]: true,
+                        [classes.yellow]: activeConversation.starred,
+                    })}
+                />
+            );
+        }
+    }, [handleStarClick, classes, activeChatType, activeConversation]);
+
     useEffect(() => {
         scrollToBottom();
     }, [scrollToBottom]);
@@ -153,6 +238,7 @@ const ActiveChat: React.FC<IProps> = ({
             <Header className={classes.header}>
                 <h5>
                     {renderName()} {renderLeaveButton()} {renderAddMembers()}
+                    {renderStar()}
                 </h5>
             </Header>
             <div className={classes.content} ref={contentRef}>
@@ -180,6 +266,11 @@ const ActiveChat: React.FC<IProps> = ({
                 handleClose={toggleAddMembersModal}
                 refetch={refetch}
                 users={users}
+            />
+            <LeaveConfirmModal
+                open={showLeaveConfirmModal}
+                handleConfirm={handleLeaveConfirm}
+                handleClose={handleLeaveClose}
             />
         </Container>
     );

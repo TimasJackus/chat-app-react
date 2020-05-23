@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
-export const SEND_REPLY = gql`
-    mutation sendMessage($data: ReplyInput!, $image: Upload) {
-        sendReply(data: $data, image: $image) {
+export const TOGGLE_PIN = gql`
+    mutation togglePinned($id: String!) {
+        togglePinned(id: $id) {
             id
             sender {
                 id
@@ -12,13 +12,14 @@ export const SEND_REPLY = gql`
                 description
                 imageUrl
             }
+            type
             content
+            imageUrl
             createdAt
             updatedAt
-            replyCount
-            imageUrl
-            type
             pinned
+            replyCount
+            parent
         }
     }
 `;

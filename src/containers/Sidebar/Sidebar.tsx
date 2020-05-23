@@ -11,6 +11,7 @@ import MessagesList from "../MessagesList/MessagesList";
 import { GET_REPLIES } from "../../graphql/queries/GET_REPLIES";
 import { IReplyData, IReplyVars } from "../../types/interfaces/Reply";
 import { IUser } from "../../types/interfaces";
+import { FileType } from "rsuite/es/Uploader";
 
 interface IProps {
     users: IUser[];
@@ -44,7 +45,7 @@ const Sidebar: React.FC<IProps> = ({ users, conversations, channels }) => {
     });
 
     const handleSubmit = useCallback(
-        async (message: string) => {
+        async (message: string | null, image: File | null) => {
             if (selectedThread) {
                 await sendReplyMutation({
                     variables: {
@@ -52,6 +53,7 @@ const Sidebar: React.FC<IProps> = ({ users, conversations, channels }) => {
                             content: message,
                             parentId: selectedThread.id,
                         },
+                        image,
                     },
                 });
             }

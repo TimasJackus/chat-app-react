@@ -16,6 +16,9 @@ export const GET_PRIVATE_MESSAGES = gql`
             createdAt
             updatedAt
             replyCount
+            imageUrl
+            type
+            pinned
         }
     }
 `;

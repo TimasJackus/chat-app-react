@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const SEND_MESSAGE = gql`
-    mutation sendMessage($data: MessageInput!) {
-        sendMessage(data: $data) {
+    mutation sendMessage($data: MessageInput!, $image: Upload) {
+        sendMessage(data: $data, image: $image) {
             id
             sender {
                 id
@@ -16,6 +16,9 @@ export const SEND_MESSAGE = gql`
             createdAt
             updatedAt
             replyCount
+            imageUrl
+            type
+            pinned
         }
     }
 `;

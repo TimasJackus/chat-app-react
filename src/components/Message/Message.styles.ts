@@ -77,4 +77,18 @@ export const useStyles = createUseStyles({
             backgroundColor: ColorEnum.LightGrey,
         },
     },
+    image: {
+        maxWidth: "100%",
+    },
+    thumbTack: {
+        marginLeft: "auto",
+        marginRight: 10,
+        cursor: "pointer",
+    },
+    pinned: {
+        color: ColorEnum.Blue,
+    },
+    notPinned: {
+        color: ColorEnum.Grey,
+    },
 });

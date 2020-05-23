@@ -20,20 +20,15 @@ import "rsuite/dist/styles/rsuite-default.css";
 import { subscriptionClient } from "./utils/subscriptionClient";
 import { SidebarProvider } from "./contexts/Sidebar";
 import { UserProvider } from "./contexts/UserContext";
+import { createUploadLink } from "apollo-upload-client";
 
-const httpLink = new HttpLink({ uri: "http://localhost:4000/" });
 const wsLink = new WebSocketLink(subscriptionClient);
-
-// subscriptionClient.onConnected(() => {
-//     setTimeout(() => {
-//         console.log("remove connection");
-//         subscriptionClient.unsubscribeAll();
-//         subscriptionClient.close(true);
-//     }, 5000);
-// });
+const uploadLink = createUploadLink({
+    uri: "http://localhost:4000/graphql",
+}) as any;
 
 const splitLink = split(
-    ({ query }) => {
+    ({ query }: any) => {
         const definition = getMainDefinition(query);
         return (
             definition.kind === "OperationDefinition" &&
@@ -41,7 +36,7 @@ const splitLink = split(
         );
     },
     wsLink,
-    httpLink
+    uploadLink
 );
 
 const authMiddleware = new ApolloLink((operation, forward) => {
