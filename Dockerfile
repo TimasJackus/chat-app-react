@@ -1,10 +1,7 @@
-FROM node:12
+FROM nginx
 
-COPY package*.json ./
+WORKDIR /root/
+COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./build /app
 
-RUN npm install
-
-COPY . .
-
-EXPOSE 3000
-CMD [ "npm", "run", "start" ]
+EXPOSE 80

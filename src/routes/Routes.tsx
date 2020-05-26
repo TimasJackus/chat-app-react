@@ -7,7 +7,7 @@ import Main from "../containers/Main/Main";
 
 export const Routes = () => {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename="/stud-18">
             <Switch>
                 <Route path="/register">
                     <Register />
