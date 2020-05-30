@@ -10,6 +10,7 @@ interface IProps {
     users: IUser[];
     conversations: any[];
     channels: any[];
+    noDataText?: string;
 }
 
 const MessagesList: React.FC<IProps> = ({
@@ -18,6 +19,7 @@ const MessagesList: React.FC<IProps> = ({
     users,
     conversations,
     channels,
+    noDataText,
 }) => {
     const classes = useStyles();
     return (
@@ -35,8 +37,9 @@ const MessagesList: React.FC<IProps> = ({
                 ))
             ) : (
                 <div className={classes.info}>
-                    There are no messages in this conversation. Write a message
-                    to begin conversation.
+                    {noDataText ||
+                        `There are no messages in this conversation. Write a message
+                    to begin conversation.`}
                 </div>
             )}
         </>

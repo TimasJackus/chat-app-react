@@ -9,6 +9,7 @@ export const GET_USERS = gql`
             phoneNumber
             description
             imageUrl
+            unreadCount
         }
         conversations: getConversations {
             id
@@ -23,6 +24,7 @@ export const GET_USERS = gql`
                 description
                 imageUrl
             }
+            unreadCount
         }
         channels: getChannels {
             id
@@ -39,6 +41,7 @@ export const GET_USERS = gql`
             }
             name
             isPrivate
+            unreadCount
         }
     }
 `;

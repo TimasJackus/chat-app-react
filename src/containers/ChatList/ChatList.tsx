@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useState } from "react";
-import { Sidenav, Sidebar, Dropdown, Button, Icon } from "rsuite";
+import { Sidenav, Sidebar, Dropdown, Button, Icon, Badge } from "rsuite";
 import { IUser } from "../../types/interfaces";
 import { useHistory } from "react-router-dom";
 import CreateGroupModal from "../CreateGroupModal/CreateGroupModal";
@@ -8,6 +8,7 @@ import { useStyles } from "./ChatList.styles";
 import CreateChannelModal from "../CreateChannelModal/CreateChannelModal";
 import { UserContext } from "../../contexts/UserContext";
 import SearchModal from "../SearchModal/SearchModal";
+import { SidebarUpdateContext } from "../../contexts/Sidebar";
 
 const panelStyles = {
     padding: "4px 20px",
@@ -37,6 +38,7 @@ const ChatList: React.FC<IProps> = ({
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [showChannelModal, setShowChannelModal] = useState(false);
     const [showSearchModal, setShowSearchModal] = useState(false);
+    const { openPinnedMessages } = useContext(SidebarUpdateContext);
     const { onLogout, user } = useContext(UserContext);
     const classes = useStyles();
     const history = useHistory();
@@ -49,6 +51,10 @@ const ChatList: React.FC<IProps> = ({
         setShowSearchModal(!showSearchModal);
     }, [setShowSearchModal, showSearchModal]);
 
+    const handlePinnedMessagesClick = useCallback(() => {
+        openPinnedMessages();
+    }, [openPinnedMessages]);
+
     const toggleChannelModal = useCallback(() => {
         setShowChannelModal(!showChannelModal);
     }, [showChannelModal]);
@@ -58,6 +64,10 @@ const ChatList: React.FC<IProps> = ({
             history.push(`/${type}/${object.id}`);
         };
     }
+
+    const handleEditClick = useCallback(() => {
+        history.push(`/edit`);
+    }, [history]);
 
     return (
         <>
@@ -78,6 +88,23 @@ const ChatList: React.FC<IProps> = ({
                         >
                             <Icon icon="search" style={{ paddingRight: 5 }} />
                             Search
+                        </Button>
+                        <Button
+                            style={{ marginLeft: 20, marginTop: 10 }}
+                            onClick={handlePinnedMessagesClick}
+                        >
+                            <Icon
+                                icon="thumb-tack"
+                                style={{ paddingRight: 5 }}
+                            />
+                            Show pinned messages
+                        </Button>
+                        <Button
+                            style={{ marginLeft: 20, marginTop: 10 }}
+                            onClick={handleEditClick}
+                        >
+                            <Icon icon="edit" style={{ paddingRight: 5 }} />
+                            Edit Profile
                         </Button>
                         {(conversations.filter((c) => c.starred).length > 0 ||
                             channels.filter((c) => c.starred)) && (
@@ -100,6 +127,14 @@ const ChatList: React.FC<IProps> = ({
                                                 conversation.members,
                                                 true
                                             )}
+                                            {conversation.unreadCount > 0 && (
+                                                <Badge
+                                                    className={classes.ml10}
+                                                    content={
+                                                        conversation.unreadCount
+                                                    }
+                                                />
+                                            )}
                                         </Dropdown.Item>
                                     ))}
                                 {channels
@@ -114,6 +149,14 @@ const ChatList: React.FC<IProps> = ({
                                             )}
                                         >
                                             #{channel.name}
+                                            {channel.unreadCount > 0 && (
+                                                <Badge
+                                                    className={classes.ml10}
+                                                    content={
+                                                        channel.unreadCount
+                                                    }
+                                                />
+                                            )}
                                         </Dropdown.Item>
                                     ))}
                                 <Dropdown.Item divider />
@@ -131,6 +174,12 @@ const ChatList: React.FC<IProps> = ({
                                         onSelect={handleChatClick("user", user)}
                                     >
                                         {user.displayName}
+                                        {user.unreadCount > 0 && (
+                                            <Badge
+                                                className={classes.ml10}
+                                                content={user.unreadCount}
+                                            />
+                                        )}
                                     </Dropdown.Item>
                                 ))
                             ) : (
@@ -166,6 +215,14 @@ const ChatList: React.FC<IProps> = ({
                                                 conversation.members,
                                                 true
                                             )}
+                                            {conversation.unreadCount > 0 && (
+                                                <Badge
+                                                    className={classes.ml10}
+                                                    content={
+                                                        conversation.unreadCount
+                                                    }
+                                                />
+                                            )}
                                         </Dropdown.Item>
                                     ))
                             ) : (
@@ -197,6 +254,14 @@ const ChatList: React.FC<IProps> = ({
                                             )}
                                         >
                                             #{channel.name}
+                                            {channel.unreadCount > 0 && (
+                                                <Badge
+                                                    className={classes.ml10}
+                                                    content={
+                                                        channel.unreadCount
+                                                    }
+                                                />
+                                            )}
                                         </Dropdown.Item>
                                     ))
                             ) : (

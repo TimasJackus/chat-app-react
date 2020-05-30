@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
-export const TOGGLE_PIN = gql`
-    mutation togglePinned($id: String!) {
-        togglePinned(id: $id) {
+export const GET_PINNED_MESSAGES = gql`
+    query pinnedMessages {
+        messages: pinnedMessages {
             id
             sender {
                 id

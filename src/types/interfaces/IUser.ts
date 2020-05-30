@@ -6,4 +6,5 @@ export interface IUser {
     description?: string;
     imageUrl?: string;
     token: string;
+    unreadCount: number;
 }

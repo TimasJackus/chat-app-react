@@ -15,6 +15,7 @@ import { readQuery } from "../../utils/readQuery";
 import { getQueryByType } from "../../utils/getQueryByType";
 import Sidebar from "../Sidebar/Sidebar";
 import { useStyles } from "./Main.styles";
+import EditProfile from "../EditProfile/EditProfile";
 
 const Main = () => {
     const [activeChat, setActiveChat] = useState(null);
@@ -78,20 +79,26 @@ const Main = () => {
                         channels={data.channels}
                         refetch={refetch}
                     />
-                    <ActiveChat
-                        users={data.users}
-                        conversations={data.conversations}
-                        channels={data.channels}
-                        activeChat={activeChat}
-                        activeChatType={activeChatType}
-                        client={client}
-                        refetch={refetch}
-                    />
-                    <Sidebar
-                        users={data.users}
-                        conversations={data.conversations}
-                        channels={data.channels}
-                    />
+                    {match.params.type === "edit" ? (
+                        <EditProfile />
+                    ) : (
+                        <>
+                            <ActiveChat
+                                users={data.users}
+                                conversations={data.conversations}
+                                channels={data.channels}
+                                activeChat={activeChat}
+                                activeChatType={activeChatType}
+                                client={client}
+                                refetch={refetch}
+                            />
+                            <Sidebar
+                                users={data.users}
+                                conversations={data.conversations}
+                                channels={data.channels}
+                            />
+                        </>
+                    )}
                 </Container>
             )}
         </ApolloConsumer>

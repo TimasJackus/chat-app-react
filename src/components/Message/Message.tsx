@@ -15,6 +15,10 @@ import { getQueryByType } from "../../utils/getQueryByType";
 import { DELETE_MSG } from "../../graphql/mutations/DELETE_MESSAGE";
 import { useRouteMatch } from "react-router-dom";
 import { TOGGLE_PIN } from "../../graphql/mutations/TOGGLE_PIN";
+import { GET_PINNED_MESSAGES } from "../../graphql/queries/GET_PINNED_MESSAGES";
+import { Picker } from "emoji-mart";
+import "emoji-mart/css/emoji-mart.css";
+import Reactions from "./Reactions/Reactions";
 
 interface IProps {
     message: IMessage;
@@ -75,13 +79,28 @@ const Message: React.FC<IProps> = ({
                         ...m,
                         pinned: togglePinned.pinned,
                     };
-                    return m;
                 }
+                return m;
             });
             cache.writeQuery({
                 query: getQueryByType(message.type).query,
                 variables: { id: match.params.id },
                 data: { messages },
+            });
+            const pinnedMessagesQuery = cache.readQuery<any>({
+                query: GET_PINNED_MESSAGES,
+            });
+            const pinnedMessages = togglePinned.pinned
+                ? pinnedMessagesQuery.messages.concat([togglePinned])
+                : pinnedMessagesQuery.messages.filter((m: IMessage) => {
+                      if (m.id === togglePinned.id) {
+                          return false;
+                      }
+                      return m.pinned;
+                  });
+            cache.writeQuery({
+                query: GET_PINNED_MESSAGES,
+                data: { messages: pinnedMessages },
             });
         },
     });
@@ -168,11 +187,13 @@ const Message: React.FC<IProps> = ({
             <Avatar
                 className={classes.avatar}
                 style={{
-                    background: avatarBackground.color,
+                    background: sender.imageUrl
+                        ? `url('${sender.imageUrl}')`
+                        : avatarBackground.color,
                     color: avatarColor,
                 }}
             >
-                {sender.displayName[0]}
+                {sender.imageUrl ? "" : sender.displayName[0]}
             </Avatar>
             <div className={classes.messageWrapper}>
                 <div
@@ -245,6 +266,7 @@ const Message: React.FC<IProps> = ({
                         </div>
                     )}
                 </div>
+                <Reactions message={message} />
                 {showReplyCount && (
                     <div
                         className={clsx(
