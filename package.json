@@ -2,7 +2,7 @@
     "name": "chat-client",
     "version": "0.1.0",
     "private": true,
-    "homepage": ".",
+    "homepage": "http://dc-itc.el.vgtu.lt:22080/stud-18/",
     "dependencies": {
         "@apollo/client": "^3.0.0-beta.39",
         "@apollo/link-error": "^2.0.0-beta.3",
