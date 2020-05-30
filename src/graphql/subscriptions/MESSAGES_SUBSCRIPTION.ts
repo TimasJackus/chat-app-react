@@ -22,6 +22,21 @@ export const MESSAGES_SUBSCRIPTION = gql`
                     replyCount
                     imageUrl
                     type
+                    pinned
+                    viewed
+                    reactions {
+                        id
+                        react
+                        user {
+                            id
+                            email
+                            displayName
+                            phoneNumber
+                            description
+                            imageUrl
+                            unreadCount
+                        }
+                    }
                 }
             }
         }

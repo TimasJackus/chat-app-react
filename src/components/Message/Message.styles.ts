@@ -12,6 +12,8 @@ export const useStyles = createUseStyles({
     },
     avatar: {
         background: "#3498FF",
+        backgroundSize: "cover !important",
+        backgroundPosition: "center !important",
     },
     noBorderBottomRadius: {
         borderBottomLeftRadius: 0,

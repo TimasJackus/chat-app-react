@@ -21,4 +21,7 @@ export const useStyles = createUseStyles({
         borderBottomColor: ColorEnum.LighterGrey,
         marginBottom: 10,
     },
+    ml10: {
+        marginLeft: 10,
+    },
 });

@@ -1,16 +1,14 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-    Container,
-    Header,
-    Footer,
-    Loader,
-    Button,
-    Icon,
-    Dropdown,
-} from "rsuite";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+import { Container, Header, Footer, Loader, Button, Icon } from "rsuite";
 import { useStyles } from "./ActiveChat.styles";
 import { IMessageData, IMessageVars, IUser } from "../../types/interfaces";
-import { useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { SEND_MESSAGE, TOGGLE_STAR } from "../../graphql/mutations";
 import { constructGroupName } from "../../utils/constructGroupName";
 import { getQueryByType } from "../../utils/getQueryByType";
@@ -19,10 +17,13 @@ import { useHistory } from "react-router-dom";
 import AddMembersModal from "../AddMembersModal/AddMembersModal";
 import MessagesList from "../MessagesList/MessagesList";
 import MessageInput from "../../components/MessageInput/MessageInput";
-import { FileType } from "rsuite/es/Uploader";
 import clsx from "clsx";
 import { GET_USERS } from "../../graphql/queries";
 import LeaveConfirmModal from "../LeaveConfirmModal/LeaveConfirmModal";
+import { readQuery } from "../../utils/readQuery";
+import ErrorModal from "../ErrorModal/ErrorModal";
+import { GraphQLError } from "graphql";
+import ConvertToChannelModal from "../ConvertToChannelModal/ConvertToChannelModal";
 
 interface IProps {
     activeChat: string | null;
@@ -44,6 +45,9 @@ const ActiveChat: React.FC<IProps> = ({
 }) => {
     const [showAddMembers, setShowAddMembers] = useState(false);
     const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
+    const [showConvertToChannelModal, setShowConvertToChannelModal] = useState(
+        false
+    );
     const classes = useStyles();
     const contentRef = useRef<HTMLDivElement>(null);
     const activeUser = users.find((user) => user.id === activeChat);
@@ -52,14 +56,57 @@ const ActiveChat: React.FC<IProps> = ({
         conversations.find(
             (conversation: any) => conversation.id === activeChat
         ) || channels.find((channel: any) => channel.id === activeChat);
+    const client = useApolloClient();
     const { loading, data, error } = useQuery<IMessageData, IMessageVars>(
         getQueryByType(activeChatType).query,
         {
             variables: { id: activeChat },
             skip: !activeChat,
+            onCompleted: () => {
+                const cache = readQuery(client, {
+                    query: GET_USERS,
+                });
+                if (cache) {
+                    client.writeQuery({
+                        query: GET_USERS,
+                        data: {
+                            users: cache.users.map((user: any) => {
+                                if (user.id === activeChat) {
+                                    return {
+                                        ...user,
+                                        unreadCount: 0,
+                                    };
+                                }
+                                return user;
+                            }),
+                            channels: cache.channels.map((channel: any) => {
+                                if (channel.id === activeChat) {
+                                    return {
+                                        ...channel,
+                                        unreadCount: 0,
+                                    };
+                                }
+                                return channel;
+                            }),
+                            conversations: cache.conversations.map(
+                                (conversation: any) => {
+                                    if (conversation.id === activeChat) {
+                                        return {
+                                            ...conversation,
+                                            unreadCount: 0,
+                                        };
+                                    }
+                                    return conversation;
+                                }
+                            ),
+                        },
+                    });
+                }
+            },
         }
     );
 
+    const [errors, setErrors] = useState<readonly GraphQLError[]>([]);
     const [sendMessageMutation] = useMutation(SEND_MESSAGE, {
         update: function (cache, { data: { sendMessage } }) {
             const query = cache.readQuery<any>({
@@ -72,7 +119,14 @@ const ActiveChat: React.FC<IProps> = ({
                 data: { messages: query.messages.concat(sendMessage) },
             });
         },
+        onError({ graphQLErrors }) {
+            setErrors(graphQLErrors);
+        },
     });
+
+    const handleCloseErrorModal = useCallback(() => {
+        setErrors([]);
+    }, [setErrors]);
 
     const [leaveConversation] = useMutation(LEAVE_CONVERSATION, {
         onCompleted() {
@@ -123,7 +177,6 @@ const ActiveChat: React.FC<IProps> = ({
 
     const handleSubmit = useCallback(
         async (message: string | null, image: File | null) => {
-            console.log(image);
             if (activeChatType === "user") {
                 await sendMessageMutation({
                     variables: {
@@ -170,16 +223,32 @@ const ActiveChat: React.FC<IProps> = ({
         await handleLeaveConversation();
     }, [handleLeaveConversation, setShowLeaveConfirmModal]);
 
+    const handleConvertClick = useCallback(() => {
+        setShowConvertToChannelModal(true);
+    }, [setShowConvertToChannelModal]);
+
+    const handleConvertClose = useCallback(() => {
+        setShowConvertToChannelModal(false);
+    }, [setShowConvertToChannelModal]);
+
+    const renderConvertButton = useMemo(() => {
+        if (
+            activeChatType === "conversation" &&
+            activeConversation &&
+            !activeConversation?.name
+        ) {
+            return (
+                <Button onClick={handleConvertClick}>Convert To Channel</Button>
+            );
+        }
+        return null;
+    }, [activeConversation, activeChatType, handleConvertClick]);
+
     const renderLeaveButton = useCallback(() => {
         if (activeChatType === "conversation" && activeConversation) {
             return <Button onClick={handleLeaveClick}>Leave</Button>;
         }
-    }, [
-        handleLeaveConversation,
-        activeConversation,
-        activeChatType,
-        handleLeaveClick,
-    ]);
+    }, [activeConversation, activeChatType, handleLeaveClick]);
 
     const renderAddMembers = useCallback(() => {
         if (activeChatType === "conversation" && activeConversation) {
@@ -187,7 +256,7 @@ const ActiveChat: React.FC<IProps> = ({
         }
     }, [toggleAddMembersModal, activeConversation, activeChatType]);
 
-    const renderName = useCallback(() => {
+    const renderName = useMemo(() => {
         if (activeChatType === "user") {
             return activeUser ? `${activeUser.displayName}` : "None selected";
         }
@@ -196,7 +265,7 @@ const ActiveChat: React.FC<IProps> = ({
                 return "#" + activeConversation?.name;
             }
             return activeConversation
-                ? `${constructGroupName(activeConversation.members)}`
+                ? `${constructGroupName(activeConversation.members, true)}`
                 : "None selected";
         }
         return "None selected";
@@ -237,7 +306,8 @@ const ActiveChat: React.FC<IProps> = ({
         <Container className={classes.container}>
             <Header className={classes.header}>
                 <h5>
-                    {renderName()} {renderLeaveButton()} {renderAddMembers()}
+                    {renderName} {renderLeaveButton()} {renderAddMembers()}{" "}
+                    {renderConvertButton}
                     {renderStar()}
                 </h5>
             </Header>
@@ -252,14 +322,16 @@ const ActiveChat: React.FC<IProps> = ({
                     />
                 )}
             </div>
-            <Footer className={classes.footer}>
-                <MessageInput
-                    users={users}
-                    conversations={conversations}
-                    channels={channels}
-                    handleSubmit={handleSubmit}
-                />
-            </Footer>
+            {renderName !== "None selected" && (
+                <Footer className={classes.footer}>
+                    <MessageInput
+                        users={users}
+                        conversations={conversations}
+                        channels={channels}
+                        handleSubmit={handleSubmit}
+                    />
+                </Footer>
+            )}
             <AddMembersModal
                 id={activeConversation?.id}
                 open={showAddMembers}
@@ -271,6 +343,17 @@ const ActiveChat: React.FC<IProps> = ({
                 open={showLeaveConfirmModal}
                 handleConfirm={handleLeaveConfirm}
                 handleClose={handleLeaveClose}
+            />
+            <ErrorModal
+                show={errors.length > 0}
+                close={handleCloseErrorModal}
+                errors={errors}
+            />
+            <ConvertToChannelModal
+                open={showConvertToChannelModal}
+                refetch={refetch}
+                handleClose={handleConvertClose}
+                conversationId={activeChat}
             />
         </Container>
     );

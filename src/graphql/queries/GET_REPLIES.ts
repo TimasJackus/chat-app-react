@@ -19,6 +19,20 @@ export const GET_REPLIES = gql`
             imageUrl
             type
             pinned
+            viewed
+            reactions {
+                id
+                react
+                user {
+                    id
+                    email
+                    displayName
+                    phoneNumber
+                    description
+                    imageUrl
+                    unreadCount
+                }
+            }
         }
     }
 `;

@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
-export const TOGGLE_PIN = gql`
-    mutation togglePinned($id: String!) {
-        togglePinned(id: $id) {
+export const TOGGLE_REACTION = gql`
+    mutation toggleReaction($messageId: String!, $react: String!) {
+        toggleReaction(messageId: $messageId, react: $react) {
             id
             sender {
                 id

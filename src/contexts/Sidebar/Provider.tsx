@@ -6,6 +6,9 @@ import { SidebarContext } from "./Context";
 export const SidebarProvider: React.FC = ({ children }) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selectedThread, setSelectedThread] = useState<IMessage | null>(null);
+    const [showPinnedMessages, setShowPinnedMessages] = useState<boolean>(
+        false
+    );
 
     const close = useCallback(() => {
         setSelectedThread(null);
@@ -20,15 +23,20 @@ export const SidebarProvider: React.FC = ({ children }) => {
         [setSelectedThread, setIsOpen]
     );
 
-    const updateValue = useMemo(() => ({ close, selectThread }), [
-        close,
-        selectThread,
-    ]);
+    const openPinnedMessages = useCallback(() => {
+        setShowPinnedMessages(true);
+        setIsOpen(true);
+    }, [setShowPinnedMessages, setIsOpen]);
 
-    const value = useMemo(() => ({ isOpen, selectedThread }), [
-        isOpen,
-        selectedThread,
-    ]);
+    const updateValue = useMemo(
+        () => ({ close, selectThread, openPinnedMessages }),
+        [close, selectThread, openPinnedMessages]
+    );
+
+    const value = useMemo(
+        () => ({ isOpen, selectedThread, showPinnedMessages }),
+        [isOpen, selectedThread, showPinnedMessages]
+    );
 
     return (
         <SidebarUpdateContext.Provider value={updateValue}>
